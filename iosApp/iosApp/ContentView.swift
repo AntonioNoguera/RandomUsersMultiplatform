@@ -3,7 +3,7 @@ import Shared
 
 struct ContentView: View {
     
-    @ObservedObject var viewModel: ViewModel
+    @ObservedObject var viewModel: ViewModel = ViewModel()
     
     var body: some View {
         VStack{
@@ -29,31 +29,29 @@ struct ContentView: View {
     }
 }
 
-extension ContentView {
+@MainActor
+class ViewModel : ObservableObject {
+    var homeRepository: HomeRepository = HomeRepository.init()
     
-    @MainActor
-    class ViewModel : ObservableObject {
-        var homeRepository: HomeRepository = HomeRepository.init()
-        
-        @Published var users: [RandomUser] = []
-        
-        func observeDataFlow() {
-            Task {
-                do {
-                    let users = try await homeRepository.getUsersSync()
-                    await MainActor.run {
-                        self.users = users
-                    }
-                } catch {
-                    print("Error: \(error)")
+    @Published var users: [RandomUser] = []
+    
+    func observeDataFlow() {
+        Task {
+            do {
+                let users = try await homeRepository.getUsersSync()
+                await MainActor.run {
+                    self.users = users
                 }
+            } catch {
+                print("Error: \(error)")
             }
         }
     }
 }
-    
-    //struct ContentView_Previews: PreviewProvider {
-    //    static var previews: some View {
-    //        ContentView()
-    //    }
-    //}
+
+
+struct ContentView_Previews: PreviewProvider {
+    static var previews: some View {
+        ContentView()
+    }
+}
