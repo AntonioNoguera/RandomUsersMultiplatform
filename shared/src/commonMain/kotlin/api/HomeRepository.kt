@@ -10,28 +10,21 @@ import kotlinx.coroutines.runBlocking
 
 class HomeRepository {
 
-    suspend fun getRandomUsers(): RandomUserApiResponse {
+    //Fetching Call
+    private suspend fun fetchUsers(): RandomUserApiResponse {
         val response = httpClient.get("https://randomuser.me/api/?page=1&results=20&seed=abc")
         return response.body()
     }
 
+    //For Android
     fun getUsers(): Flow<List<RandomUser>> = flow {
-        emit(getRandomUsers().results)
+        emit(fetchUsers().results)
     }
 
-    suspend fun getUsersWithoutflow(): List<RandomUser> {
-        return getRandomUsers().results
-    }
-
-    // Agregar método con nombre diferente que se exponga correctamente
-    suspend fun fetchUserList(): List<RandomUser> {
-        return getRandomUsers().results
-    }
-
-    // O método síncrono
+    //For iOS
     fun getUsersSync(): List<RandomUser> {
         return runBlocking {
-            getRandomUsers().results
+            fetchUsers().results
         }
     }
 }
